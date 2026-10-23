@@ -1,155 +1,83 @@
 # Evaluasi Tengah Semester (ETS) Riset Informatika
 
-> **Proposal Penelitian Tugas Akhir / Skripsi S1 Informatika**  
-> **Fakultas Ilmu Komputer, UPN "Veteran" Jawa Timur**
+Naskah proposal ETS Program Studi S1 Informatika, Fakultas Ilmu Komputer, UPN "Veteran" Jawa Timur. Judul yang diajukan:
 
----
+> Rancang Bangun Kiosk Biometrik Berbasis IoT dengan Verifikasi Tanda Tangan Menggunakan Siamese Neural Network untuk Keanggotaan Koperasi
 
-## 📌 Identitas Mahasiswa & Akademik
+Penyusun: Jonathan Abimael Sutanto (23081010128)
+Dosen pengampu: Dr. Basuki Rahmat, S.Si, MT
+Tahun: 2026
 
-* **Nama Mahasiswa:** Jonathan Abimael Sutanto  
-* **NIM:** 23081010128  
-* **Program Studi:** S1 Informatika  
-* **Fakultas:** Ilmu Komputer  
-* **Institusi:** Universitas Pembangunan Nasional "Veteran" Jawa Timur  
-* **Mata Kuliah:** Riset Informatika
-* **Dosen Pengampu:** Dr. Basuki Rahmat, S.Si, MT  
-* **Semester / Tahun:** Ganjil / 2026  
+## Isi repository
 
----
+| Berkas | Keterangan |
+|---|---|
+| `ETS/Proposal_ETS_RisetInformatika_23081010128.pdf` | Naskah proposal final, 25 halaman, margin 4-4-3-3 cm, Times New Roman 12 pt, spasi 1.5 |
+| `ETS/Proposal_ETS_RisetInformatika_23081010128.docx` | Sumber Word yang masih bisa disunting |
+| `README.md` | Berkas ini |
 
-## 🎯 Judul Penelitian
+Unduh langsung: [proposal PDF](ETS/Proposal_ETS_RisetInformatika_23081010128.pdf) atau [sumber DOCX](ETS/Proposal_ETS_RisetInformatika_23081010128.docx).
 
-> **"Rancang Bangun Kiosk Biometrik Berbasis IoT dengan Verifikasi Tanda Tangan Menggunakan Siamese Neural Network untuk Keanggotaan Koperasi"**
+## Masalah yang mau diselesaikan
 
-* **Bidang Minat / Peminatan:** Internet of Things (IoT) & Kecerdasan Buatan / Deep Learning (Computer Vision)
-* **Peminatan Silang:** Rekayasa Perangkat Lunak (Software Engineering)
+Koperasi di lingkungan kedinasan masih memakai tanda tangan basah untuk menyetujui pencairan pinjaman, penarikan simpanan, mutasi anggota, dan berita acara pemberhentian. Pemeriksaannya dilakukan kasir dengan mata, dan itu tidak cukup untuk menangkap pemalsuan tingkat mahir. Kasus pinjaman fiktif biasanya baru ketahuan setelah korban melihat potongan gaji untuk cicilan yang tidak pernah ia ajukan.
 
----
+Sidik jari saja tidak menyelesaikan persoalan ini. Sensor sidik jari membuktikan orangnya hadir di depan alat, tetapi tidak meninggalkan dokumen persetujuan yang bisa diperiksa pengawas internal atau penyidik saat terjadi sengketa. Tanda tangan di kertas melakukan sebaliknya: ada dokumennya, tetapi tidak ada bukti bahwa orang yang menandatangani benar-benar hadir saat itu. Karena itu sistem ini memakai keduanya.
 
-## 📝 Ringkasan Eksekutif (Executive Summary)
+## Cara kerja sistem
 
-Pemalsuan tanda tangan pada warkat administrasi simpan pinjam, mutasi tugas, dan pengunduran diri anggota koperasi di lingkungan kedinasan, seperti Pusat Koperasi Kepolisian (Puskopol) dan Induk Koperasi Kepolisian (INKOPPOL), menimbulkan risiko kerugian finansial material serta sengketa yuridis yang merugikan kredibilitas institusi. Praktik verifikasi manual oleh petugas loket memiliki kelemahan mendasar karena ketidakmampuan mata telanjang mendeteksi pemalsuan tingkat mahir (*skilled forgery*) yang meniru morfologi tanda tangan asli. Di samping itu, sistem biometrik tunggal (*unimodal*) seperti sidik jari semata tidak meninggalkan dokumen persetujuan formal bernilai hukum, sedangkan tanda tangan kertas semata tidak memiliki bukti kehadiran fisik waktu nyata (*proof of presence*).
+Kiosk berdiri sendiri tanpa PC. Anggota menempelkan jari ke sensor optik R307, dan modul itu mencocokkan templat 1:1 di dalam prosesornya sendiri, jadi verifikasi sidik jari tetap jalan walau jaringan sedang putus. Kalau jari cocok, layar OLED meminta anggota meletakkan lembar tanda tangan di dalam boks. Kamera ESP32-CAM memotret lembar itu dengan jarak dan pencahayaan tetap, lalu mengirim gambar ke server lewat HTTP.
 
-Penelitian ini mengusulkan solusi terpadu berupa rancang bangun **Kiosk Biometrik Mandiri Berbasis Internet of Things (IoT)** yang mengintegrasikan verifikasi dwi-modalitas: biometrik fisiologis sidik jari dan biometrik perilaku tanda tangan statis (*offline signature*). Perangkat keras kiosk dirancang kompak dan berdaya rendah menggunakan mikrokontroler **ESP32 WROOM-32** sebagai *master controller*, modul sensor sidik jari optik **GROW R307** dengan komunikasi serial UART level logika TTL untuk pencocokan 1:1 *onboard*, modul kamera **ESP32-CAM (OV2640)** beresolusi terkontrol untuk akuisisi citra tanda tangan basah, layar OLED 0.96 inci I2C, serta *audio buzzer* aktif. 
+Di server, FastAPI menjalankan Siamese Neural Network untuk membandingkan tanda tangan yang baru dipindai dengan sampel master anggota. Jaringan punya dua cabang dengan bobot yang sama, dan tiap citra dipetakan jadi vektor 128 dimensi. Dua tanda tangan dianggap cocok kalau jarak Euclidean antara vektornya masih di bawah ambang yang ditentukan saat validasi. Pelatihan memakai contrastive loss, sehingga model tidak perlu dilatih ulang setiap ada anggota baru.
 
-Di sisi peladen (*server*), layanan backend **FastAPI** mengorkestrasi inferensi *Deep Learning* menggunakan arsitektur **Siamese Neural Network (SNN)** (*twin networks* dengan *shared weights* berbasis MobileNetV2/ResNet-18) yang dioptimasi menggunakan fungsi objektif **Contrastive Loss** untuk menghitung jarak Euclidean antar-vektor representasi (*embedding*). Pendekatan *writer-independent* diterapkan agar sistem mampu memverifikasi anggota baru secara *zero-shot* tanpa pelatihan ulang model. Sistem secara otomatis menerbitkan dokumen **Berita Acara Transaksi digital berformat PDF** bertanda air dan mencatat jejak audit (*audit trail*) terenkapsulasi ke basis data.
+Kalau verifikasi lolos, server menyusun berita acara PDF, menyimpan hash dan waktu transaksi ke basis data, lalu mengirim status sukses ke kiosk. Kalau gagal, transaksi ditolak dan percobaan dicatat.
 
----
+## Perangkat keras
 
-## 🏛️ Arsitektur Sistem & Alur Transaksi
+| Komponen | Spesifikasi | Harga |
+|---|---|---|
+| ESP32 WROOM-32 | DevKit V1 38 pin, Wi-Fi 2.4 GHz | Rp 65.000 |
+| ESP32-CAM | OV2640 2 MP, PSRAM 4 MB, plus programmer FTDI | Rp 85.000 |
+| Sensor sidik jari R307 | Optik 500 DPI, UART 57.600 bps, pencocokan onboard | Rp 165.000 |
+| OLED 0.96 inci | 128x64, I2C SSD1306 | Rp 28.000 |
+| Adaptor 5V 3A | Jack DC plus kabel pembagi daya | Rp 38.000 |
+| Buzzer dan tombol | Buzzer aktif 5V, sakelar taktil 12 mm | Rp 12.000 |
+| LED dan difuser | Strip SMD 2835 plus akrilik buram | Rp 18.000 |
+| Kabel dan PCB | Jumper, header, kapasitor 1000 uF | Rp 15.000 |
+| Boks akrilik | 3 mm, potong laser | Rp 45.000 |
+| **Total** | | **Rp 471.000** |
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Anggota
-    participant Kiosk as ESP32 Edge (R307 + OLED)
-    participant Cam as ESP32-CAM
-    participant Server as FastAPI Backend
-    participant ML as PyTorch SNN Engine
-    participant DB as Database & PDF Engine
+## Rencana pengujian
 
-    Anggota->>Kiosk: Tempel Jari pada Sensor R307
-    Note over Kiosk: Pencocokan 1:1 lokal pada modul DSP R307
-    alt Sidik Jari Gagal (> 3x)
-        Kiosk->>Anggota: OLED: "Akses Ditolak / Terkunci 5 Menit"
-        Kiosk->>Server: Log ALERT_LOCKOUT
-    else Sidik Jari Cocok (Member ID Teridentifikasi)
-        Kiosk->>Anggota: OLED: "Jari Valid. Masukkan Lembar Tanda Tangan"
-        Kiosk->>Cam: Trigger Capture via GPIO/WiFi
-        Anggota->>Cam: Letakkan dokumen di kompartemen kamera
-        Cam->>Server: HTTP POST /api/v1/verify/signature (Image + Member_ID)
+Pengujian model memakai dua sumber data. CEDAR Signature Dataset dipakai untuk pra-pelatihan karena berisi 55 penulis dengan 24 tanda tangan asli dan 24 pemalsuan terampil per penulis. Data lokal dikumpulkan dari 40 responden, masing-masing 10 tanda tangan asli dalam dua sesi terpisah dan 5 pemalsuan terampil yang dibuat tiga peniru. Pembagian data dilakukan per subjek, bukan per citra, supaya tidak ada kebocoran antara data latih dan data uji.
 
-        Server->>ML: Kirim Raw Image + Template Referensi Anggota
-        Note over ML: Preprocessing (Crop, Otsu, 224x224) -> Forward Pass SNN Twin
-        ML->>ML: Hitung Jarak Euclidean (D_w)
+Metrik yang dihitung:
 
-        alt Jarak D_w > Threshold (Indikasi Pemalsuan)
-            ML-->>Server: Result: REJECTED (Score: D_w)
-            Server-->>Kiosk: HTTP 403 (OLED: "Tanda Tangan Tidak Cocok!")
-            Server->>DB: Log REJECTED_FORGERY
-        else Jarak D_w <= Threshold (Tanda Tangan Valid)
-            ML-->>Server: Result: ACCEPTED (Score: D_w)
-            Server->>DB: Commit Transaksi Keanggotaan
-            Server->>Server: Generate PDF Berita Acara (fpdf2 + Watermark)
-            Server-->>Kiosk: HTTP 200 (OLED: "Transaksi Sah! Berita Acara Terbit")
-            Kiosk->>Anggota: Buzzer Melodi Sukses
-        end
-    end
-```
+- False Acceptance Rate, yaitu FP / (FP + TN)
+- False Rejection Rate, yaitu FN / (TP + FN)
+- Equal Error Rate, titik ketika FAR dan FRR bernilai sama pada kurva ROC
+- Precision, recall, dan F1 pada beberapa nilai ambang jarak
 
----
+Sisi perangkat keras diukur terpisah. Latensi dihitung mulai dari tombol ditekan sampai layar OLED menampilkan hasil, dengan target di bawah 2.5 detik. Kestabilan Wi-Fi diuji pada jarak 1, 5, dan 10 meter, baik dengan maupun tanpa penghalang. Konsumsi arus dicatat saat standby dan saat kamera serta radio aktif. Untuk sisi pengguna, pengurus koperasi mengisi kuesioner System Usability Scale dan ditargetkan mendapat skor minimal 70.
 
-## 🔬 State-of-the-Art (SOTA) & Research Gap
+## Penelitian yang jadi acuan
 
-| No | Peneliti & Tahun | Metode / Algoritma | Modalitas | Platform | Keterbatasan & Celah (*Research Gap*) |
-|:--:|:---|:---|:---|:---|:---|
-| 1 | **Andani et al. (2020)** *JTIKA UNRAM* | Local Binary Pattern (LBP) + LVQ | Tanda Tangan Offline | Software Desktop | Akurasi rendah (63%), *closed-set* (*writer-dependent*), rentan *skilled forgery*, tanpa perangkat IoT. |
-| 2 | **Mudjirahardjo et al. (2019)** *Jurnal EECCIS (UB)* | GLCM + LBP + Euclidean Distance | Tanda Tangan Offline | Software Desktop | Fokus identifikasi tertutup, bukan verifikasi keaslian; sangat sensitif terhadap variasi rotasi tulisan. |
-| 3 | **Pradana & Asmara (2024)** *JSAI (UMB)* | Hu Moments + HOG + SVM | Tanda Tangan Digital | Desktop Python | Wajib melatih ulang model setiap ada penambahan subjek baru (*closed-set*); fitur manual rentan noise kamera. |
-| 4 | **Mayda & Musdholifah (2022)** *IJCCS (UGM)* | Siamese CNN (ResNet-18) + Contrastive Loss | Tanda Tangan Offline | Server GPU | Hanya simulasi komputasi pada benchmark publik (CEDAR); tanpa perangkat keras akuisisi fisik terpasang. |
-| 5 | **Saputra et al. (2023)** *Telekontran (UNIKOM)* | Minutiae Matching Sensor AS608 | Sidik Jari | ESP32 + LCD | *Single modality*, rawan kegagalan baca mekanik sensor, tanpa verifikasi dokumen legalitas formal. |
-| 6 | **Surya et al. (2024)** *JENTIK (Poltek Kampar)* | Template Matching + ESP32-CAM | Sidik Jari + Foto | ESP32-CAM + Fingerprint | Kamera hanya mengambil foto log visual tanpa inferensi AI cerdas; use-case presensi dasar. |
-| 7 | **Fatkhudin et al. (2022)** *Jurnal RESTI* | Role-Based Access Control + Web CRUD | Non-Biometrik | Web Server PHP | Autentikasi konvensional password/PIN sangat rentan manipulasi dan pinjaman fiktif. |
-| 8 | **Penelitian Ini (Diusulkan)** | **Siamese CNN (Contrastive) + R307 1:1 UART** | **Sidik Jari + Tanda Tangan** | **Kiosk ESP32 + FastAPI Backend** | **Solusi terpadu: Kiosk IoT mandiri berbiaya terjangkau + Deep Metric Learning writer-independent + Berita Acara PDF otomatis.** |
+| Peneliti | Metode | Modalitas | Keterbatasan |
+|---|---|---|---|
+| Andani dkk. (2020), JTIKA UNRAM | LBP + LVQ | Tanda tangan | Akurasi 63 persen, model harus dilatih ulang untuk penulis baru |
+| Mudjirahardjo dkk. (2019), EECCIS UB | GLCM + LBP | Tanda tangan | Hanya identifikasi tertutup, sensitif terhadap rotasi |
+| Pradana dan Asmara (2024), JSAI UMB | Hu Moments + HOG + SVM | Tanda tangan | Perlu retraining tiap ada subjek baru |
+| Mayda dan Musdholifah (2022), IJCCS UGM | Siamese CNN + contrastive loss | Tanda tangan | Simulasi di dataset publik, belum ada perangkat akuisisi |
+| Saputra dkk. (2023), Telekontran UNIKOM | Minutiae AS608 | Sidik jari | Satu modalitas, tanpa verifikasi dokumen |
+| Surya dkk. (2024), JENTIK Poltek Kampar | Template matching + ESP32-CAM | Sidik jari dan foto | Kamera hanya menyimpan gambar, tidak ada inferensi |
+| Fatkhudin dkk. (2022), Jurnal RESTI | RBAC dan CRUD web | Tanpa biometrik | Autentikasi password, rawan manipulasi |
 
-### Kebaruan Akademik (*Novelty Statement*)
-> *"Penelitian ini menghadirkan kebaruan sistemik (systemic novelty) melalui rancang bangun Kiosk Biometrik Mandiri Berbasis IoT yang mengintegrasikan akuisisi fisik multisensor secara nirkabel (ESP32, R307, ESP32-CAM) dengan mesin inferensi Siamese Neural Network berparadigma writer-independent pada peladen backend. Keunggulan arsitektural ini memungkinkan sistem memverifikasi keabsahan tanda tangan anggota baru secara zero-shot (cukup membandingkan jarak embedding $\mathcal{L}_2$ tanda tangan uji terhadap warkat referensi saat registrasi tanpa pelatihan ulang model), memitigasi risiko pinjaman fiktif melalui pengikatan biometrik ganda (kehadiran fisik dan kesadaran yuridis), serta menerbitkan dokumen Berita Acara transaksi terenkapsulasi secara otomatis dan real-time."*
+Yang membedakan proposal ini: belum ada penelitian di Indonesia yang menggabungkan verifikasi sidik jari berbasis IoT dengan verifikasi tanda tangan offline berbasis Siamese Network dalam satu sistem keanggotaan. Klaim ini dibatasi pada hasil penelusuran repositori yang tercantum di naskah, bukan klaim global.
 
----
+## Status pengerjaan
 
-## 🛠️ Spesifikasi Perangkat Keras & Estimasi Biaya (BOM)
+Naskah ini masih proposal. Belum ada kiosk yang dirakit, belum ada model yang dilatih, dan belum ada angka hasil pengujian. Angka yang muncul di dokumen adalah rencana target dan estimasi biaya, bukan capaian. Bagian hasil akan diisi setelah prototipe selesai dan dataset terkumpul.
 
-| No | Komponen / Modul | Spesifikasi Teknis | Kuantitas | Harga Satuan (IDR) | Total (IDR) |
-|:--:|:---|:---|:---:|:---:|:---:|
-| 1 | **ESP32 WROOM-32** | DevKit V1 38-Pin, Wi-Fi 2.4GHz + BLE | 1 unit | Rp 65.000 | Rp 65.000 |
-| 2 | **ESP32-CAM + OV2640** | Sensor 2MP, 4MB PSRAM, FTDI Programmer | 1 unit | Rp 85.000 | Rp 85.000 |
-| 3 | **GROW R307 Optical Sensor** | 500 DPI, UART 57600 bps, DSP Onboard | 1 unit | Rp 165.000 | Rp 165.000 |
-| 4 | **OLED Display 0.96 inch** | 128x64 pixels, Interface I2C SSD1306 | 1 unit | Rp 28.000 | Rp 28.000 |
-| 5 | **Adaptor Switching 5V 3A** | Jack DC 5.5mm + Kabel Pembagi Daya | 1 unit | Rp 38.000 | Rp 38.000 |
-| 6 | **Piezo Buzzer & Push Button** | Active Buzzer 5V + Sakelar Taktil 12mm | 1 paket | Rp 12.000 | Rp 12.000 |
-| 7 | **LED Strip 5V + Difusor** | SMD 2835 Cool White + Akrilik Buram | 1 paket | Rp 18.000 | Rp 18.000 |
-| 8 | **Kabel Jumper & PCB Matrix** | Kabel Silikon, Header Pin, Kapasitor 1000uF | 1 paket | Rp 15.000 | Rp 15.000 |
-| 9 | **Enclosure Boks Akrilik** | Akrilik Hitam 3mm Cutting Laser Presisi | 1 unit | Rp 45.000 | Rp 45.000 |
-| **Total** | **Bill of Materials (BOM) Kiosk Hardware** | | | | **Rp 471.000** |
+## Sitasi
 
----
-
-## 📊 Metrik Evaluasi Pengujian
-
-1. **Metrik Biometrik & Machine Learning:**
-   * **False Acceptance Rate (FAR):** $\text{FAR} = \frac{FP}{FP + TN}$
-   * **False Rejection Rate (FRR):** $\text{FRR} = \frac{FN}{TP + FN}$
-   * **Equal Error Rate (EER):** Titik potong optimal saat $\text{FAR} = \text{FRR}$ pada kurva ROC (*Receiver Operating Characteristic*).
-   * **ROC-AUC:** Area di bawah kurva ROC untuk mengevaluasi ketahanan model terhadap variasi threshold $\tau \in [0.2, 1.2]$.
-   * **Skenario Pengujian:** *Intra-class* (Asli vs Asli), *Random Forgery* (Asli subjek A vs Asli subjek B), dan *Skilled Forgery* (Asli vs Tiruan Terampil oleh 3 peniru terlatih).
-
-2. **Metrik Performa IoT & Jaringan:**
-   * **End-to-End Latency:** $T_{\text{total}} = T_{\text{capture}} + T_{\text{transfer\_up}} + T_{\text{preprocess}} + T_{\text{inferensi}} + T_{\text{transfer\_down}} + T_{\text{oled}}$ (Target $< 2.5\text{ detik}$).
-   * **Kecepatan Pencocokan Sidik Jari:** DSP onboard R307 ($< 300\text{ ms}$).
-   * **Quality of Service (QoS) Wi-Fi:** Throughput & Packet Loss pada jarak 1m, 5m, dan 10m (*Line-of-Sight* dan *Non-Line-of-Sight*).
-   * **Konsumsi Daya:** Pengukuran arus rata-rata (mA) pada mode *standby* vs *active capture/transmission*.
-
-3. **Metrik Fungsionalitas & Penerimaan Pengguna:**
-   * **Black-Box Testing:** Menggunakan metode Boundary Value Analysis (BVA) dan Equivalence Partitioning (EP) pada seluruh endpoint API FastAPI.
-   * **System Usability Scale (SUS):** Kuesioner baku 10 butir (Brooke, 1996) kepada staf pengurus dan kasir koperasi (Target skor SUS $\ge 70$, kategori *Good/Acceptable*).
-
----
-
-## 📂 Struktur Berkas Repositori
-
-```text
-ETS/
-├── README.md                                  # Dokumentasi ringkas & spesifikasi teknis proposal
-├── Proposal_ETS_RisetInformatika_23081010128.pdf # Berkas PDF resmi proposal (25 Halaman, Margin 4-4-3-3 cm)
-└── Proposal_ETS_RisetInformatika_23081010128.docx # Naskah Word dapat disunting (Times New Roman, 1.5 spasi)
-```
-
----
-
-## 📄 Akses Dokumen
-
-Dokumen proposal resmi berformat PDF dan naskah dokumen Word telah dikompilasi secara otomatis sesuai format pedoman skripsi dan standar evaluasi mata kuliah Riset Teknologi Informasi:
-
-* 📥 **[Download Proposal PDF](./Proposal_ETS_RisetInformatika_23081010128.pdf)**
-* 📝 **[Download Proposal DOCX](./Proposal_ETS_RisetInformatika_23081010128.docx)**
+Daftar pustaka lengkap dalam format APA ada di bagian akhir PDF. Rujukan utama: Hadsell dkk. (2006) untuk contrastive loss, Dey dkk. (2017) untuk SigNet, Hafemann dkk. (2019) untuk fitur tanda tangan offline, serta Brooke (1996) untuk instrumen SUS.
