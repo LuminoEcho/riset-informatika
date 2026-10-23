@@ -1,4 +1,4 @@
-# Evaluasi Tengah Semester (ETS) — Riset Teknologi Informasi
+# Evaluasi Tengah Semester (ETS) Riset Informatika
 
 > **Proposal Penelitian Tugas Akhir / Skripsi S1 Informatika**  
 > **Fakultas Ilmu Komputer, UPN "Veteran" Jawa Timur**
@@ -12,7 +12,7 @@
 * **Program Studi:** S1 Informatika  
 * **Fakultas:** Ilmu Komputer  
 * **Institusi:** Universitas Pembangunan Nasional "Veteran" Jawa Timur  
-* **Mata Kuliah:** Riset Teknologi Informasi (141118) — 3 SKS  
+* **Mata Kuliah:** Riset Informatika
 * **Dosen Pengampu:** Dr. Basuki Rahmat, S.Si, MT  
 * **Semester / Tahun:** Ganjil / 2026  
 
